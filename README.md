@@ -38,14 +38,14 @@ sudo make install
 ```
 
 ## CYU
-To provide further insight and help detect anomalous (and potentially malicious) GQUIC traffic, fingerprinting is utilized.  The fingerprinting system, named "CYU" and pronounced "see you" works by identifying the GQUIC version and tags present in client hello packets.  First, the version of the packet is extracted, immediately followed by a comma.  After this, each tag in the client hello packet is gathered and concatenated together with hyphens to delimit each tag.  For example: `46,PAD-SNI-STK-VER-CCS-NONC-AEAD-UAID-SCID-TCID-PDMD-SMHL-ICSL-NONP-PUBS-MIDS-SCLS-KEXS-XLCT-CSCT-COPT-CCRT-IRTT-CFCW-SFCW`.  After this string is created, it is then MD5 hashed to produce an easily shareable fingerprint.  Hashing the previous string results in a CYU value of `a46560d4548108cf99308319b3b85346`.  This is the most common fingerprint, making up the vast majority of GQUIC traffic.
+To provide further insight and help detect anomalous (and potentially malicious) GQUIC traffic, fingerprinting is utilized.  The fingerprinting method, named "CYU" works by identifying the GQUIC version and tags present in client hello packets.  First, the version of the packet is extracted, immediately followed by a comma.  After this, each tag in the client hello packet is gathered and concatenated together with hyphens to delimit each tag.  For example: `46,PAD-SNI-STK-VER-CCS-NONC-AEAD-UAID-SCID-TCID-PDMD-SMHL-ICSL-NONP-PUBS-MIDS-SCLS-KEXS-XLCT-CSCT-COPT-CCRT-IRTT-CFCW-SFCW`.  After this string is created, it is then MD5 hashed to produce an easily shareable fingerprint.  Hashing the previous string results in a CYU value of `a46560d4548108cf99308319b3b85346`.  This is the most common fingerprint, making up the vast majority of GQUIC traffic.
 
 ### Use case: Merlin C2
-The CYU hash can be very useful when it comes to detecting beacons transmitting to servers over GQUIC.  For example, Merlin C2 clients use very few tags in their client hellos, giving them an anomalous fingerprints.
+The CYU fingerprinting method can be very useful when it comes to detecting beacons transmitting to servers over GQUIC.  For example, Merlin C2 clients use very few tags in their client hellos, giving them an anomalous fingerprints.
 Known Merlin beacon fingerprints: `e030dea1f2eea44ac7db5fe4de792acd`, `0811fab28e41e8c8a33e220a15b964d9`, `d8b208b236d176c89407500dbefb04c2`.
 
 ## New Events Created
-The GQUIC protocol analyzer adds new four events which can be called in Bro scripts.
+The GQUIC protocol analyzer adds new four events which can be called in Zeek scripts.
 ### gquic_packet
 ```sh
 event (c: connection, is_orig: bool, hdr: GQUIC::PublicHeader)
@@ -87,7 +87,7 @@ Generated whenever a rejection packet (server hello) is detected in GQUIC traffi
 Defined in the init.bro script, a constant named `skip_after_confirm` is set to true.  This means that only the initial exchange between the client and server will be captured.  This is done to reduce noise, but it also reduces some visibility.  It can be set to true as one sees fit.
 
 ## New Types Created
-The GQUIC protocol analyzer adds three new data types which can be referenced in Bro scripts.
+The GQUIC protocol analyzer adds three new data types which can be referenced in Zeek scripts.
 ### type: PublicHeader
 ```sh
 pkt_num: count
