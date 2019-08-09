@@ -37,16 +37,6 @@ bro -N
 sudo make install
 ```
 
-## Building the GQUIC Protocol Analyzer using a Precompiled Executable
-There is a precompiled executable for Bro 2.5 on CentOS 7.  Move the folder labelled Salesforce_GQUIC into the proper directory and the plugin will be activated.  If Bro was built using a standard RPM file, it would be
-```sh
-/opt/bro/lib/bro/plugins/
-```
-These precompiled binaries are architecture and version specific, so be sure to use it for the correct version.
-
-To modify the script which is producing gquic.log, edit the scripts/Salesforce/GQUIC/main.bro file and make and install again.
-See https://docs.zeek.org/en/stable/devel/plugins.html for more information.
-
 ## CYU
 To provide further insight and help detect anomalous (and potentially malicious) GQUIC traffic, fingerprinting is utilized.  The fingerprinting system, named "CYU" and pronounced "see you" works by identifying the GQUIC version and tags present in client hello packets.  First, the version of the packet is extracted, immediately followed by a comma.  After this, each tag in the client hello packet is gathered and concatenated together with hyphens to delimit each tag.  For example: `46,PAD-SNI-STK-VER-CCS-NONC-AEAD-UAID-SCID-TCID-PDMD-SMHL-ICSL-NONP-PUBS-MIDS-SCLS-KEXS-XLCT-CSCT-COPT-CCRT-IRTT-CFCW-SFCW`.  After this string is created, it is then MD5 hashed to produce an easily shareable fingerprint.  Hashing the previous string results in a CYU value of `a46560d4548108cf99308319b3b85346`.  This is the most common fingerprint, making up the vast majority of GQUIC traffic.
 
