@@ -1,3 +1,8 @@
+# Copyright (c) 2019, salesforce.com, inc.
+# All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+# For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+
 module GQUIC;
 
 export {
@@ -29,62 +34,8 @@ event bro_init() &priority=5
 #	Analyzer::register_for_ports(Analyzer::ANALYZER_GQUIC, ports);
 	}
 
-event gquic_rej(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, rej: GQUIC::RejInfo)
-	{
-	local j = 0;
-	local tags_only = "";
-	local tag_list = rej$tag_list;
-	while ( j < (rej$tag_count) )
-		{
-		if (j == 0) {
-		
-		}
-		else {
-			tags_only += "-";
-		}
-
-		local one = tag_list[j*8];
-		local two = tag_list[j*8+1];
-		local three = tag_list[j*8+2];
-		local four = tag_list[j*8+3];
-		local check = fmt("%s", four);	
-		if ((check == "\x00") || (check == "\xff"))
-			tags_only += (one+two+three);
-		else	
-			tags_only += (one+two+three+four);
-		++j;
-		}
-
-	j = 0;
-	tags_only += ",";
-	local tag_list_e = rej$scfg;
-	while ( j < (rej$embedded_count) )
-		{
-		if (j == 0) {
-		
-		}
-		else {
-			tags_only += "-";
-		}
-
-		one = tag_list_e[j*8];
-		two = tag_list_e[j*8+1];
-		three = tag_list_e[j*8+2];
-		four = tag_list_e[j*8+3];
-		check = fmt("%s", four);	
-		if ((check == "\x00") || (check == "\xff"))
-			tags_only += (one+two+three);
-		else	
-			tags_only += (one+two+three+four);
-		++j;
-		}
-	
-	}
-
-
 event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: GQUIC::HelloInfo)
 	{
-	#For a unique hash
 	local tag_list_string = HeIn$tag_list;	
 
 	#Tag grabber
