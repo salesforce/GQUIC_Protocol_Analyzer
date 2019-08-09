@@ -301,9 +301,16 @@ embedded_count:	count &optional;
 * **embedded_count**: The number of tags/value pairs defined in the server config message.
 
 
-## Acknowledgements
-* Designed by Caleb Yu and the Salesforce detection team under John Althouse.
-* Prior GQUIC work done by the Corelight team: https://github.com/corelight/bro-quic (Copyright (c) 2017-2018 by Corelight, Inc)
+## Credits
+Created by:
+* [Caleb Yu](https://www.linkedin.com/in/caleb-yu)
+
+With assistance from:
+* [John Althouse](https://twitter.com/4A4133)
+* [Rakesh Passa](https://twitter.com/Sithari443)
+* The [Corelight Team](https://github.com/corelight/bro-quic)
+* Salesforce Threat Detection Team
+
 ### References:
 * https://docs.google.com/document/d/1g5nIXAIkN_Y-7XJW5K45IblHd_L2f5LTaDUDwvZ5L6g
 * https://docs.google.com/document/d/1WJvyZflAO2pq77yOLbp9NsGjC1CHetAXV8I0fQe-B_U
