@@ -1,0 +1,3 @@
+module GQUIC;
+
+const skip_after_confirm: bool;

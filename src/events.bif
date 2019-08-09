@@ -1,0 +1,14 @@
+
+## Raised for every GQUIC Regular Packet.
+event gquic_packet%(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader%);
+
+## Raised whenever a GQUIC client sends a Regular Packet with a novel GQUIC
+## version number.  E.g. you might see this twice for a single connection if
+## Version Negotiation happened.
+event gquic_client_version%(c: connection, version: count%);
+
+## Raised whenever a GQUIC Client Hello Packet is seen.
+event gquic_hello%(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, hello: GQUIC::HelloInfo%);
+
+## Raised whenever a GQUIC Rejection Packet is seen.
+event gquic_rej%(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, rej: GQUIC::RejInfo%);

@@ -1,0 +1,4 @@
+[package]
+script_dir = scripts/Salesforce/GQUIC
+build_command = ./configure && make
+test_command = cd tests && btest

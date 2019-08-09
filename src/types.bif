@@ -1,0 +1,5 @@
+module GQUIC;
+
+type HelloInfo: record;
+type PublicHeader: record;
+type RejInfo: record;
