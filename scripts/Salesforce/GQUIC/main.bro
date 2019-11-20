@@ -67,7 +67,7 @@ event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: 
 			fingerprint += (one+two+three+four);
 		++i;
 		}
-	if (hdr$version_exists == T)
+	if (hdr?$version)	
 		{
 		local version_string = fmt("%s", hdr$version);
 		local cable_hash = (version_string + "," + fingerprint); 
@@ -78,15 +78,15 @@ event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: 
 	info$ts=network_time();
 	info$uid=c$uid;
 	info$id=c$id;
-	if (HeIn$sni_exists == T)
+	if (HeIn?$sni)
 		{
 		info$server_name=HeIn$sni;
 		}
-	if (HeIn$uaid_exists == T)
+	if (HeIn?$uaid)
 		{
 		info$user_agent=HeIn$uaid;	
 		}
-	if (hdr$version_exists == T)
+	if (hdr?$version)
 		{
 		info$version=hdr$version;
 		}
