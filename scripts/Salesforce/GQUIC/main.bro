@@ -24,6 +24,12 @@ export {
 
 }
 
+# Add the gquic info to the connection record.
+redef record connection += {
+	gquic: Info &optional;
+};
+
+
 const ports = { 80/udp, 443/udp };
 redef likely_server_ports += { ports };
 
@@ -34,7 +40,7 @@ event bro_init() &priority=5
 #	Analyzer::register_for_ports(Analyzer::ANALYZER_GQUIC, ports);
 	}
 
-event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: GQUIC::HelloInfo)
+event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: GQUIC::HelloInfo) &priority=5
 	{
 	local tag_list_string = HeIn$tag_list;	
 
@@ -61,7 +67,7 @@ event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: 
 			fingerprint += (one+two+three+four);
 		++i;
 		}
-	if (hdr$version_exists == T)	
+	if (hdr$version_exists == T)
 		{
 		local version_string = fmt("%s", hdr$version);
 		local cable_hash = (version_string + "," + fingerprint); 
@@ -87,5 +93,13 @@ event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: 
 	info$tag_count=HeIn$tag;	
 	info$cyu=md5_hash(cable_hash);
 	info$cyutags=cable_hash;
-	Log::write(GQUIC::LOG, info);  
+	# Copy the present packet info into the connection record
+        # If more gquic packets are sent on the same connection, the newest one
+        # will overwrite the previous
+        c$gquic = info;
+	}
+
+event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: GQUIC::HelloInfo) &priority=-5
+	{
+	Log::write(GQUIC::LOG, c$gquic);  
 	}
