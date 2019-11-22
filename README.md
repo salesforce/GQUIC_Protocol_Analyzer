@@ -11,12 +11,12 @@ make
 make install
 ```
 
-#####  To test before installation
+##### To test before installation
 ```sh
 export BRO_PLUGIN_PATH=/path/to/bro-quic/build
 bro -N
 ```
-#######To see all options, including setting the install path, run:
+##### To see all options, including setting the install path, run:
  ```sh
 ./configure --help 
 ```
