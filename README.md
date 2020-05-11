@@ -3,40 +3,23 @@ This analyzer parses GQUIC traffic in Bro/Zeek for logging and detection purpose
 
 ## Installing the GQUIC Protocol Analyzer using Source Tree
 
-##### First, navigate to the plugin directory
-```sh
-cd bro-2.X.X/aux/bro-aux/plugin-support
-```
+##### For a standard installation
 
-##### Second, run this command
-```sh
-./init-plugin ./bro-quic Salesforce GQUIC
-```
-This will create a directory called bro-quic which contains several files and subdirectories.
-
-##### Enter the bro-quic directory<br>
-```sh
-cd bro-quic
-```
-Remove the CMakeLists.txt file and the scripts and src directory and replace them with the ones inside this repo.
-##### Now run
  ```sh
-./configure --bro-dist=/path/to/bro/dist && make
+./configure --bro-dist=/path/to/bro/dist
+make
+make install
 ```
 
-##### Finally set up an environment variable for the plugin
+##### To test before installation
 ```sh
 export BRO_PLUGIN_PATH=/path/to/bro-quic/build
-```
-##### Test to make sure the plugin was installed correctly
-```sh
 bro -N
 ```
-##### The plugin is ready to be installed
-```sh
-sudo make install
+##### To see all options, including setting the install path, run:
+ ```sh
+./configure --help
 ```
-
 ## CYU
 To provide further insight and help detect anomalous (and potentially malicious) GQUIC traffic, fingerprinting is utilized.  The fingerprinting method, named "CYU" works by identifying the GQUIC version and tags present in client hello packets.  First, the version of the packet is extracted, immediately followed by a comma.  After this, each tag in the client hello packet is gathered and concatenated together with hyphens to delimit each tag.  For example: `46,PAD-SNI-STK-VER-CCS-NONC-AEAD-UAID-SCID-TCID-PDMD-SMHL-ICSL-NONP-PUBS-MIDS-SCLS-KEXS-XLCT-CSCT-COPT-CCRT-IRTT-CFCW-SFCW`.  After this string is created, it is then MD5 hashed to produce an easily shareable fingerprint.  Hashing the previous string results in a CYU value of `a46560d4548108cf99308319b3b85346`.  This is the most common fingerprint, making up the vast majority of GQUIC traffic.
 
