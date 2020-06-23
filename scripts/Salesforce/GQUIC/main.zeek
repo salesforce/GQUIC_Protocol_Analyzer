@@ -34,7 +34,7 @@ const ports = { 80/udp, 443/udp };
 redef likely_server_ports += { ports };
 
 # probably best to rely on signature match
-event bro_init() &priority=5
+event zeek_init() &priority=5
 	{
 	Log::create_stream(GQUIC::LOG, [$columns=Info, $ev=log_gquic, $path="gquic"]); 
 #	Analyzer::register_for_ports(Analyzer::ANALYZER_GQUIC, ports);
