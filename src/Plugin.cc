@@ -7,6 +7,7 @@
 
 #include "GQUIC.h"
 #include "Plugin.h"
+#include "analyzer/Component.h"
 
 namespace plugin { namespace Salesforce_GQUIC { Plugin plugin; } }
 
