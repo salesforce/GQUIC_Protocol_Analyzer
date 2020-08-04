@@ -1,20 +1,26 @@
 # GQUIC Protocol Analyzer
-This analyzer parses GQUIC traffic in Bro/Zeek for logging and detection purposes.  It examines the initial exchange between a client and server communicating over GQUIC, and extracts the information contained in the connection's client hello packet and  server rejection packet.  Currently, this protocol analyzer supports GQUIC versions Q039 to Q046.
+This analyzer parses GQUIC traffic in Zeek for logging and detection purposes.  It examines the initial exchange between a client and server communicating over GQUIC, and extracts the information contained in the connection's client hello packet and  server rejection packet.  Currently, this protocol analyzer supports GQUIC versions Q039 to Q046.
 
 ## Installing the GQUIC Protocol Analyzer using Source Tree
 
-##### For a standard installation
+##### Install with Zeek Package Manager
+
+```sh
+zkg install --force https://github.com/salesforce/GQUIC_Protocol_Analyzer.git
+```
+
+##### Install manually
 
  ```sh
-./configure --bro-dist=/path/to/bro/dist
+./configure
 make
 make install
 ```
 
 ##### To test before installation
 ```sh
-export BRO_PLUGIN_PATH=/path/to/bro-quic/build
-bro -N
+export ZEEK_PLUGIN_PATH=/path/to/zeek-quic/build
+zeek -N
 ```
 ##### To see all options, including setting the install path, run:
  ```sh
@@ -67,7 +73,7 @@ Generated whenever a rejection packet (server hello) is detected in GQUIC traffi
 * **rej**: A data type which contains the information about the tags of a server rejection packet.
 
 ## New Constants
-Defined in the init.bro script, a constant named `skip_after_confirm` is set to true.  This means that only the initial exchange between the client and server will be captured.  This is done to reduce noise, but it also reduces some visibility.  It can be set to true as one sees fit.
+Defined in the init.zeek script, a constant named `skip_after_confirm` is set to true.  This means that only the initial exchange between the client and server will be captured.  This is done to reduce noise, but it also reduces some visibility.  It can be set to true as one sees fit.
 
 ## New Types Created
 The GQUIC protocol analyzer adds three new data types which can be referenced in Zeek scripts.
