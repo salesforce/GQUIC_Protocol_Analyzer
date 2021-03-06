@@ -9,8 +9,8 @@
 #ifndef ANALYZER_PROTOCOL_GQUIC_GQUIC_H
 #define ANALYZER_PROTOCOL_GQUIC_GQUIC_H
 
-#include "analyzer/protocol/udp/UDP.h"
-#include "analyzer/protocol/pia/PIA.h"
+#include <zeek/analyzer/protocol/udp/UDP.h>
+#include <zeek/analyzer/protocol/pia/PIA.h>
 
 namespace binpac  {
    namespace GQUIC {
@@ -18,11 +18,11 @@ namespace binpac  {
    }
 }
 
-namespace analyzer { namespace gquic {
+namespace zeek::analyzer { namespace gquic {
 
-class GQUIC_Analyzer : public analyzer::Analyzer {
+class GQUIC_Analyzer : public zeek::analyzer::Analyzer {
 public:
-	GQUIC_Analyzer(Connection* conn);
+	GQUIC_Analyzer(zeek::Connection* conn);
 	virtual ~GQUIC_Analyzer();
 
 	virtual void Done();
@@ -30,7 +30,7 @@ public:
 	                           uint64 seq, const IP_Hdr* ip,
 	                           int caplen);
 
-	static analyzer::Analyzer* Instantiate(Connection* conn)
+	static analyzer::Analyzer* Instantiate(zeek::Connection* conn)
 		{ return new GQUIC_Analyzer(conn); }
 
 protected:
@@ -43,6 +43,6 @@ protected:
 	binpac::GQUIC::GQUIC_Conn* interp;
 };
 
-} } // namespace analyzer::* 
+} } // namespace zeek::analyzer::*
 
 #endif

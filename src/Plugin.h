@@ -8,16 +8,16 @@
 #ifndef BRO_PLUGIN_SALESFORCE_GQUIC
 #define BRO_PLUGIN_SALESFORCE_GQUIC
 
-#include <plugin/Plugin.h>
+#include <zeek/plugin/Plugin.h>
 
-namespace plugin {
+namespace zeek::plugin {
 namespace Salesforce_GQUIC {
 
-class Plugin : public ::plugin::Plugin
+class Plugin : public zeek::plugin::Plugin
 {
 protected:
 	// Overridden from plugin::Plugin.
-	plugin::Configuration Configure() override;
+	zeek::plugin::Configuration Configure() override;
 };
 
 extern Plugin plugin;
