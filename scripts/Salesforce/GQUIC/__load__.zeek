@@ -3,5 +3,6 @@
 #
 
 @load ./main
+@load ./gquic_events.zeek
 
 @load-sigs ./dpd.sig

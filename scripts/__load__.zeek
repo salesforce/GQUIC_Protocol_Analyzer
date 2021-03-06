@@ -3,5 +3,3 @@
 #
 
 @load ./init.zeek
-#@load Salesforce/GQUIC
-@load ./gquic_events.zeek

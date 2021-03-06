@@ -1,5 +1,3 @@
-@load Salesforce/GQUIC
-
 event gquic_packet(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader)
 	{
 #	print "gquic_packet", c$id, is_orig, hdr;
