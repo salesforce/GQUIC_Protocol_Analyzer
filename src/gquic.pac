@@ -4,7 +4,7 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 %include binpac.pac
-%include bro.pac
+%include zeek.pac
 
 %extern{
 #include "GQUIC.h"
@@ -16,7 +16,7 @@ analyzer GQUIC withcontext {
     flow:       GQUIC_Flow;
 };
 
-connection GQUIC_Conn(bro_analyzer: BroAnalyzer) {
+connection GQUIC_Conn(zeek_analyzer: ZeekAnalyzer) {
     upflow   = GQUIC_Flow(true);
     downflow = GQUIC_Flow(false);
 };
