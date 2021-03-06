@@ -27,17 +27,17 @@ refine connection GQUIC_Conn += {
 		// Add the gquic string to conn.log
 		void confirm()
 			{
-			bro_analyzer()->ProtocolConfirmation();
+			zeek_analyzer()->ProtocolConfirmation();
 
 			if ( BifConst::GQUIC::skip_after_confirm )
-				bro_analyzer()->SetSkip(true);
+				zeek_analyzer()->SetSkip(true);
 			}
 
 		uint16 extract_gquic_version(const uint8* version_bytes)
 			{
 			if ( version_bytes[0] != 'Q' )
 				{
-				bro_analyzer()->ProtocolViolation("invalid GQUIC Version",
+				zeek_analyzer()->ProtocolViolation("invalid GQUIC Version",
 				    reinterpret_cast<const char*>(version_bytes), 4);
 				return 0;
 				}
@@ -46,7 +46,7 @@ refine connection GQUIC_Conn += {
 				{
 				if ( ! isdigit(version_bytes[i]) )
 					{
-					bro_analyzer()->ProtocolViolation(
+					zeek_analyzer()->ProtocolViolation(
 					    "invalid GQUIC Version",
 				        reinterpret_cast<const char*>(version_bytes), 4);
 					return 0;
@@ -86,8 +86,8 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 
 					if ( gquic_client_version && p.second )
 						BifEvent::generate_gquic_client_version(
-						    bro_analyzer(),
-						    bro_analyzer()->Conn(),
+						    zeek_analyzer(),
+						    zeek_analyzer()->Conn(),
 						    pkt_version);
 					}
 
@@ -110,18 +110,18 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 			if ( gquic_packet )
 				{
 				//Populate standard GQUIC packet characteristics
-				auto rv = new RecordVal(BifType::Record::GQUIC::PublicHeader);
-				rv->Assign(0, new Val(pkt_num, TYPE_COUNT));
+				auto rv = new zeek::RecordVal(BifType::Record::GQUIC::PublicHeader);
+				rv->Assign(0, zeek::val_mgr->Count(pkt_num));
 
 				if ( ${pkt.reg_pkt.cid}->present_case_index() )
 					{
 					auto bytes = ${pkt.reg_pkt.cid.bytes};
 					auto ptr = reinterpret_cast<const char*>(bytes->data());
-					rv->Assign(1, new StringVal(bytes->size(), ptr));
+					rv->Assign(1, new zeek::StringVal(bytes->size(), ptr));
 					}
-					rv->Assign(2, new Val(${pkt.flags.is_long}, TYPE_BOOL));
+					rv->Assign(2, zeek::val_mgr->Bool(${pkt.flags.is_long}));
 				if ( ${pkt.reg_pkt}->version_case_index() )
-					rv->Assign(3, new Val(pkt_version, TYPE_COUNT));
+					rv->Assign(3, zeek::val_mgr->Count(pkt_version));
 
 				if ( ${pkt.flags.hello_length} == true )
 					{
@@ -133,12 +133,12 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 						rej_packet_creation(${pkt}, is_orig, rv);
 					else
 						{
-						BifEvent::generate_gquic_packet(bro_analyzer(), bro_analyzer()->Conn(), is_orig, rv);
+						BifEvent::generate_gquic_packet(zeek_analyzer(), zeek_analyzer()->Conn(), is_orig, rv);
 						}
 					}
 				else
 					{
-					BifEvent::generate_gquic_packet(bro_analyzer(), bro_analyzer()->Conn(), is_orig, rv);
+					BifEvent::generate_gquic_packet(zeek_analyzer(), zeek_analyzer()->Conn(), is_orig, rv);
 					}
 				}
 			}
@@ -158,8 +158,8 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 
 					if ( gquic_client_version && p.second )
 						BifEvent::generate_gquic_client_version(
-								bro_analyzer(),
-								bro_analyzer()->Conn(),
+								zeek_analyzer(),
+								zeek_analyzer()->Conn(),
 								pkt_version);
 					}
 
@@ -182,18 +182,18 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 			if ( gquic_packet )
 				{
 				//Populate standard GQUIC packet characteristics
-				auto rv = new RecordVal(BifType::Record::GQUIC::PublicHeader);
-				rv->Assign(0, new Val(pkt_num, TYPE_COUNT));
+				auto rv = new zeek::RecordVal(BifType::Record::GQUIC::PublicHeader);
+				rv->Assign(0, zeek::val_mgr->Count(pkt_num));
 
 				if ( ${pkt.old_pkt.cid}->present_case_index() )
 					{
 					auto bytes = ${pkt.old_pkt.cid.bytes};
 					auto ptr = reinterpret_cast<const char*>(bytes->data());
-					rv->Assign(1, new StringVal(bytes->size(), ptr));
+					rv->Assign(1, new zeek::StringVal(bytes->size(), ptr));
 					}
-				rv->Assign(2, new Val(${pkt.flags.have_version}, TYPE_BOOL));
+				rv->Assign(2, zeek::val_mgr->Bool(${pkt.flags.have_version}));
 				if ( ${pkt.old_pkt}->version_case_index() )
-					rv->Assign(3, new Val(pkt_version, TYPE_COUNT));
+					rv->Assign(3, zeek::val_mgr->Count(pkt_version));
 
 				if ( ${pkt.flags.hello_length} == true )
 					{
@@ -205,13 +205,13 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 						rej_packet_creation(${pkt}, is_orig, rv);	
 					else
 						{
-						BifEvent::generate_gquic_packet(bro_analyzer(), bro_analyzer()->Conn(), is_orig, rv);
+						BifEvent::generate_gquic_packet(zeek_analyzer(), zeek_analyzer()->Conn(), is_orig, rv);
 						}
 					}
 
 				else
 					{
-					BifEvent::generate_gquic_packet(bro_analyzer(), bro_analyzer()->Conn(), is_orig, rv);
+					BifEvent::generate_gquic_packet(zeek_analyzer(), zeek_analyzer()->Conn(), is_orig, rv);
 					}
 				}
 			}
@@ -223,120 +223,120 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 		return true;
 		%}
 
-	function hello_packet_creation(pkt: GQUIC_Packet, is_orig: bool, rv: RecordVal(PublicHeader)): bool
+	function hello_packet_creation(pkt: GQUIC_Packet, is_orig: bool, rv: zeek::RecordVal(PublicHeader)): bool
 		%{
 		//Populate the characteristics of the Hello Packet
-		auto hi_1 = new RecordVal(BifType::Record::GQUIC::HelloInfo);
+		auto hi_1 = new zeek::RecordVal(zeek::BifType::Record::GQUIC::HelloInfo);
 		if ( ${pkt.search.build_hello.yes.tag_number} )
 			{
 			auto bytes = ${pkt.search.build_hello.yes.tag_number};
-			hi_1->Assign(0, new Val(bytes, TYPE_COUNT));
-		    	hi_1->Assign(1, new StringVal(${pkt.search.build_hello.yes.other_tags.seek_tags}.length(), (const char*)${pkt.search.build_hello.yes.other_tags.seek_tags}.begin()));
+			hi_1->Assign(0, zeek::val_mgr->Count(bytes));
+			hi_1->Assign(1, new zeek::StringVal(${pkt.search.build_hello.yes.other_tags.seek_tags}.length(), (const char*)${pkt.search.build_hello.yes.other_tags.seek_tags}.begin()));
 			auto bytes2 = ${pkt.search.build_hello.yes.p_tag_offset};
-			hi_1->Assign(2, new Val(bytes2, TYPE_COUNT));
+			hi_1->Assign(2, zeek::val_mgr->Count(bytes2));
 			}
 		if ( ${pkt.search.build_hello.yes.other_tags.sni_check} )
-			hi_1->Assign(3, new StringVal(${pkt.search.build_hello.yes.sni.collect}.length(), (const char*)${pkt.search.build_hello.yes.sni.collect}.begin()));
+			hi_1->Assign(3, new zeek::StringVal(${pkt.search.build_hello.yes.sni.collect}.length(), (const char*)${pkt.search.build_hello.yes.sni.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.stk_check} )
-			hi_1->Assign(4, new StringVal(${pkt.search.build_hello.yes.stk.collect}.length(), (const char*)${pkt.search.build_hello.yes.stk.collect}.begin()));
+			hi_1->Assign(4, new zeek::StringVal(${pkt.search.build_hello.yes.stk.collect}.length(), (const char*)${pkt.search.build_hello.yes.stk.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.sno_check} )
-			hi_1->Assign(5, new StringVal(${pkt.search.build_hello.yes.sno.collect}.length(), (const char*)${pkt.search.build_hello.yes.sno.collect}.begin()));
+			hi_1->Assign(5, new zeek::StringVal(${pkt.search.build_hello.yes.sno.collect}.length(), (const char*)${pkt.search.build_hello.yes.sno.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.ver_check} )
-			hi_1->Assign(6, new StringVal(${pkt.search.build_hello.yes.ver.collect}.length(), (const char*)${pkt.search.build_hello.yes.ver.collect}.begin()));
+			hi_1->Assign(6, new zeek::StringVal(${pkt.search.build_hello.yes.ver.collect}.length(), (const char*)${pkt.search.build_hello.yes.ver.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.ccs_check} )
-			hi_1->Assign(7, new StringVal(${pkt.search.build_hello.yes.ccs.collect}.length(), (const char*)${pkt.search.build_hello.yes.ccs.collect}.begin()));
+			hi_1->Assign(7, new zeek::StringVal(${pkt.search.build_hello.yes.ccs.collect}.length(), (const char*)${pkt.search.build_hello.yes.ccs.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.nonc_check} )
-			hi_1->Assign(8, new StringVal(${pkt.search.build_hello.yes.nonc.collect}.length(), (const char*)${pkt.search.build_hello.yes.nonc.collect}.begin()));
+			hi_1->Assign(8, new zeek::StringVal(${pkt.search.build_hello.yes.nonc.collect}.length(), (const char*)${pkt.search.build_hello.yes.nonc.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.mspc_check} )
-			hi_1->Assign(9, new StringVal(${pkt.search.build_hello.yes.mspc.collect}.length(), (const char*)${pkt.search.build_hello.yes.mspc.collect}.begin()));
+			hi_1->Assign(9, new zeek::StringVal(${pkt.search.build_hello.yes.mspc.collect}.length(), (const char*)${pkt.search.build_hello.yes.mspc.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.aead_check} )
-			hi_1->Assign(10, new StringVal(${pkt.search.build_hello.yes.aead.collect}.length(), (const char*)${pkt.search.build_hello.yes.aead.collect}.begin()));
+			hi_1->Assign(10, new zeek::StringVal(${pkt.search.build_hello.yes.aead.collect}.length(), (const char*)${pkt.search.build_hello.yes.aead.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.uaid_check} )
-			hi_1->Assign(11, new StringVal(${pkt.search.build_hello.yes.uaid.collect}.length(), (const char*)${pkt.search.build_hello.yes.uaid.collect}.begin()));
+			hi_1->Assign(11, new zeek::StringVal(${pkt.search.build_hello.yes.uaid.collect}.length(), (const char*)${pkt.search.build_hello.yes.uaid.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.scid_check} )
-			hi_1->Assign(12, new StringVal(${pkt.search.build_hello.yes.scid.collect}.length(), (const char*)${pkt.search.build_hello.yes.scid.collect}.begin()));
+			hi_1->Assign(12, new zeek::StringVal(${pkt.search.build_hello.yes.scid.collect}.length(), (const char*)${pkt.search.build_hello.yes.scid.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.tcid_check} )
-			hi_1->Assign(13, new StringVal(${pkt.search.build_hello.yes.tcid.collect}.length(), (const char*)${pkt.search.build_hello.yes.tcid.collect}.begin()));
+			hi_1->Assign(13, new zeek::StringVal(${pkt.search.build_hello.yes.tcid.collect}.length(), (const char*)${pkt.search.build_hello.yes.tcid.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.pdmd_check} )
-			hi_1->Assign(14, new StringVal(${pkt.search.build_hello.yes.pdmd.collect}.length(), (const char*)${pkt.search.build_hello.yes.pdmd.collect}.begin()));
+			hi_1->Assign(14, new zeek::StringVal(${pkt.search.build_hello.yes.pdmd.collect}.length(), (const char*)${pkt.search.build_hello.yes.pdmd.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.smhl_check} )
-			hi_1->Assign(15, new StringVal(${pkt.search.build_hello.yes.smhl.collect}.length(), (const char*)${pkt.search.build_hello.yes.smhl.collect}.begin()));
+			hi_1->Assign(15, new zeek::StringVal(${pkt.search.build_hello.yes.smhl.collect}.length(), (const char*)${pkt.search.build_hello.yes.smhl.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.icsl_check} )
-			hi_1->Assign(16, new StringVal(${pkt.search.build_hello.yes.icsl.collect}.length(), (const char*)${pkt.search.build_hello.yes.icsl.collect}.begin()));
+			hi_1->Assign(16, new zeek::StringVal(${pkt.search.build_hello.yes.icsl.collect}.length(), (const char*)${pkt.search.build_hello.yes.icsl.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.ctim_check} )
-			hi_1->Assign(17, new StringVal(${pkt.search.build_hello.yes.ctim.collect}.length(), (const char*)${pkt.search.build_hello.yes.ctim.collect}.begin()));
+			hi_1->Assign(17, new zeek::StringVal(${pkt.search.build_hello.yes.ctim.collect}.length(), (const char*)${pkt.search.build_hello.yes.ctim.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.nonp_check} )
-			hi_1->Assign(18, new StringVal(${pkt.search.build_hello.yes.nonp.collect}.length(), (const char*)${pkt.search.build_hello.yes.nonp.collect}.begin()));
+			hi_1->Assign(18, new zeek::StringVal(${pkt.search.build_hello.yes.nonp.collect}.length(), (const char*)${pkt.search.build_hello.yes.nonp.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.pubs_check} )
-			hi_1->Assign(19, new StringVal(${pkt.search.build_hello.yes.pubs.collect}.length(), (const char*)${pkt.search.build_hello.yes.pubs.collect}.begin()));
+			hi_1->Assign(19, new zeek::StringVal(${pkt.search.build_hello.yes.pubs.collect}.length(), (const char*)${pkt.search.build_hello.yes.pubs.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.mids_check} )
-			hi_1->Assign(20, new StringVal(${pkt.search.build_hello.yes.mids.collect}.length(), (const char*)${pkt.search.build_hello.yes.mids.collect}.begin()));
+			hi_1->Assign(20, new zeek::StringVal(${pkt.search.build_hello.yes.mids.collect}.length(), (const char*)${pkt.search.build_hello.yes.mids.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.scls_check} )
-			hi_1->Assign(21, new StringVal(${pkt.search.build_hello.yes.scls.collect}.length(), (const char*)${pkt.search.build_hello.yes.scls.collect}.begin()));
+			hi_1->Assign(21, new zeek::StringVal(${pkt.search.build_hello.yes.scls.collect}.length(), (const char*)${pkt.search.build_hello.yes.scls.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.kexs_check} )
-			hi_1->Assign(22, new StringVal(${pkt.search.build_hello.yes.kexs.collect}.length(), (const char*)${pkt.search.build_hello.yes.kexs.collect}.begin()));
+			hi_1->Assign(22, new zeek::StringVal(${pkt.search.build_hello.yes.kexs.collect}.length(), (const char*)${pkt.search.build_hello.yes.kexs.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.xlct_check} )
-			hi_1->Assign(23, new StringVal(${pkt.search.build_hello.yes.xlct.collect}.length(), (const char*)${pkt.search.build_hello.yes.xlct.collect}.begin()));
+			hi_1->Assign(23, new zeek::StringVal(${pkt.search.build_hello.yes.xlct.collect}.length(), (const char*)${pkt.search.build_hello.yes.xlct.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.csct_check} )
-			hi_1->Assign(24, new StringVal(${pkt.search.build_hello.yes.csct.collect}.length(), (const char*)${pkt.search.build_hello.yes.csct.collect}.begin()));
+			hi_1->Assign(24, new zeek::StringVal(${pkt.search.build_hello.yes.csct.collect}.length(), (const char*)${pkt.search.build_hello.yes.csct.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.copt_check} )
-			hi_1->Assign(25, new StringVal(${pkt.search.build_hello.yes.copt.collect}.length(), (const char*)${pkt.search.build_hello.yes.copt.collect}.begin()));
+			hi_1->Assign(25, new zeek::StringVal(${pkt.search.build_hello.yes.copt.collect}.length(), (const char*)${pkt.search.build_hello.yes.copt.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.ccrt_check} )
-			hi_1->Assign(26, new StringVal(${pkt.search.build_hello.yes.ccrt.collect}.length(), (const char*)${pkt.search.build_hello.yes.ccrt.collect}.begin()));
+			hi_1->Assign(26, new zeek::StringVal(${pkt.search.build_hello.yes.ccrt.collect}.length(), (const char*)${pkt.search.build_hello.yes.ccrt.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.irtt_check} )
-			hi_1->Assign(27, new StringVal(${pkt.search.build_hello.yes.irtt.collect}.length(), (const char*)${pkt.search.build_hello.yes.irtt.collect}.begin()));
+			hi_1->Assign(27, new zeek::StringVal(${pkt.search.build_hello.yes.irtt.collect}.length(), (const char*)${pkt.search.build_hello.yes.irtt.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.cetv_check} )
-			hi_1->Assign(28, new StringVal(${pkt.search.build_hello.yes.cetv.collect}.length(), (const char*)${pkt.search.build_hello.yes.cetv.collect}.begin()));
+			hi_1->Assign(28, new zeek::StringVal(${pkt.search.build_hello.yes.cetv.collect}.length(), (const char*)${pkt.search.build_hello.yes.cetv.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.cfcw_check} )
-			hi_1->Assign(29, new StringVal(${pkt.search.build_hello.yes.cfcw.collect}.length(), (const char*)${pkt.search.build_hello.yes.cfcw.collect}.begin()));
+			hi_1->Assign(29, new zeek::StringVal(${pkt.search.build_hello.yes.cfcw.collect}.length(), (const char*)${pkt.search.build_hello.yes.cfcw.collect}.begin()));
 		if ( ${pkt.search.build_hello.yes.other_tags.sfcw_check} )
-			hi_1->Assign(30, new StringVal(${pkt.search.build_hello.yes.sfcw.collect}.length(), (const char*)${pkt.search.build_hello.yes.sfcw.collect}.begin()));
-		BifEvent::generate_gquic_hello(bro_analyzer(), bro_analyzer()->Conn(), is_orig, rv, hi_1);
+			hi_1->Assign(30, new zeek::StringVal(${pkt.search.build_hello.yes.sfcw.collect}.length(), (const char*)${pkt.search.build_hello.yes.sfcw.collect}.begin()));
+		BifEvent::generate_gquic_hello(zeek_analyzer(), zeek_analyzer()->Conn(), is_orig, rv, hi_1);
 		return true;
 	%}
 
-	function rej_packet_creation(pkt: GQUIC_Packet, is_orig: bool, rv: RecordVal(PublicHeader)): bool
+	function rej_packet_creation(pkt: GQUIC_Packet, is_orig: bool, rv: zeek::RecordVal(PublicHeader)): bool
 		%{
-		auto rej_1 = new RecordVal(BifType::Record::GQUIC::RejInfo);
+		auto rej_1 = new zeek::RecordVal(zeek::BifType::Record::GQUIC::RejInfo);
 		if ( ${pkt.search.build_hello.rej.tag_number} )
-			rej_1->Assign(0, new Val(${pkt.search.build_hello.rej.tag_number}, TYPE_COUNT));
-		rej_1->Assign(1, new StringVal(${pkt.search.build_hello.rej.other_tags.seek_tags}.length(), (const char*)${pkt.search.build_hello.rej.other_tags.seek_tags}.begin()));
+			rej_1->Assign(0, zeek::val_mgr->Count(${pkt.search.build_hello.rej.tag_number}));
+		rej_1->Assign(1, new zeek::StringVal(${pkt.search.build_hello.rej.other_tags.seek_tags}.length(), (const char*)${pkt.search.build_hello.rej.other_tags.seek_tags}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.stk_check} )
-			rej_1->Assign(2, new StringVal(${pkt.search.build_hello.rej.stk.collect}.length(), (const char*)${pkt.search.build_hello.rej.stk.collect}.begin()));
+			rej_1->Assign(2, new zeek::StringVal(${pkt.search.build_hello.rej.stk.collect}.length(), (const char*)${pkt.search.build_hello.rej.stk.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.sno_check} )
-			rej_1->Assign(3, new StringVal(${pkt.search.build_hello.rej.sno.collect}.length(), (const char*)${pkt.search.build_hello.rej.sno.collect}.begin()));
+			rej_1->Assign(3, new zeek::StringVal(${pkt.search.build_hello.rej.sno.collect}.length(), (const char*)${pkt.search.build_hello.rej.sno.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.svid_check} )
-			rej_1->Assign(4, new StringVal(${pkt.search.build_hello.rej.svid.collect}.length(), (const char*)${pkt.search.build_hello.rej.svid.collect}.begin()));
+			rej_1->Assign(4, new zeek::StringVal(${pkt.search.build_hello.rej.svid.collect}.length(), (const char*)${pkt.search.build_hello.rej.svid.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.prof_check} )
-			rej_1->Assign(5, new StringVal(${pkt.search.build_hello.rej.prof.collect}.length(), (const char*)${pkt.search.build_hello.rej.prof.collect}.begin()));
+			rej_1->Assign(5, new zeek::StringVal(${pkt.search.build_hello.rej.prof.collect}.length(), (const char*)${pkt.search.build_hello.rej.prof.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.scfg_check} )
-			rej_1->Assign(6, new StringVal(${pkt.search.build_hello.rej.scfg.collect.other_tags.seek_tags}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.other_tags.seek_tags}.begin()));
+			rej_1->Assign(6, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.other_tags.seek_tags}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.other_tags.seek_tags}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.rrej_check} )
-			rej_1->Assign(7, new StringVal(${pkt.search.build_hello.rej.rrej.collect}.length(), (const char*)${pkt.search.build_hello.rej.rrej.collect}.begin()));
+			rej_1->Assign(7, new zeek::StringVal(${pkt.search.build_hello.rej.rrej.collect}.length(), (const char*)${pkt.search.build_hello.rej.rrej.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.sttl_check} )
-			rej_1->Assign(8, new StringVal(${pkt.search.build_hello.rej.sttl.collect}.length(), (const char*)${pkt.search.build_hello.rej.sttl.collect}.begin()));
+			rej_1->Assign(8, new zeek::StringVal(${pkt.search.build_hello.rej.sttl.collect}.length(), (const char*)${pkt.search.build_hello.rej.sttl.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.other_tags.csct_check} )
-			rej_1->Assign(9, new StringVal(${pkt.search.build_hello.rej.csct.collect}.length(), (const char*)${pkt.search.build_hello.rej.csct.collect}.begin()));
+			rej_1->Assign(9, new zeek::StringVal(${pkt.search.build_hello.rej.csct.collect}.length(), (const char*)${pkt.search.build_hello.rej.csct.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.ver_check} )
-			rej_1->Assign(10, new StringVal(${pkt.search.build_hello.rej.scfg.collect.ver.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.ver.collect}.begin()));
+			rej_1->Assign(10, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.ver.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.ver.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.aead_check} )
-			rej_1->Assign(11, new StringVal(${pkt.search.build_hello.rej.scfg.collect.aead.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.aead.collect}.begin()));
+			rej_1->Assign(11, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.aead.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.aead.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.scid_check} )
-			rej_1->Assign(12, new StringVal(${pkt.search.build_hello.rej.scfg.collect.scid.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.scid.collect}.begin()));
+			rej_1->Assign(12, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.scid.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.scid.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.pdmd_check} )
-			rej_1->Assign(13, new StringVal(${pkt.search.build_hello.rej.scfg.collect.pdmd.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.pdmd.collect}.begin()));
+			rej_1->Assign(13, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.pdmd.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.pdmd.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.tbkp_check} )
-			rej_1->Assign(14, new StringVal(${pkt.search.build_hello.rej.scfg.collect.tbkp.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.tbkp.collect}.begin()));
+			rej_1->Assign(14, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.tbkp.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.tbkp.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.pubs_check} )
-			rej_1->Assign(15, new StringVal(${pkt.search.build_hello.rej.scfg.collect.pubs.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.pubs.collect}.begin()));
+			rej_1->Assign(15, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.pubs.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.pubs.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.kexs_check} )
-			rej_1->Assign(16, new StringVal(${pkt.search.build_hello.rej.scfg.collect.kexs.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.kexs.collect}.begin()));
+			rej_1->Assign(16, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.kexs.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.kexs.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.obit_check} )
-			rej_1->Assign(17, new StringVal(${pkt.search.build_hello.rej.scfg.collect.obit.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.obit.collect}.begin()));
+			rej_1->Assign(17, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.obit.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.obit.collect}.begin()));
 		if ( ${pkt.search.build_hello.rej.scfg.collect.other_tags.expy_check} )
-			rej_1->Assign(18, new StringVal(${pkt.search.build_hello.rej.scfg.collect.expy.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.expy.collect}.begin()));
-		rej_1->Assign(19, new Val(${pkt.search.build_hello.rej.scfg.collect.tag_number}, TYPE_COUNT));
-		BifEvent::generate_gquic_rej(bro_analyzer(), bro_analyzer()->Conn(), is_orig, rv, rej_1);
+			rej_1->Assign(18, new zeek::StringVal(${pkt.search.build_hello.rej.scfg.collect.expy.collect}.length(), (const char*)${pkt.search.build_hello.rej.scfg.collect.expy.collect}.begin()));
+		rej_1->Assign(19, zeek::val_mgr->Count(${pkt.search.build_hello.rej.scfg.collect.tag_number}));
+		BifEvent::generate_gquic_rej(zeek_analyzer(), zeek_analyzer()->Conn(), is_orig, rv, rej_1);
 		return true;
 		%}
 
@@ -419,7 +419,7 @@ function process_packet(pkt: GQUIC_Packet, is_orig: bool): bool
 		auto gquic_is_big_endian = version == 0 || version >= 39;
 
 		if ( gquic_is_big_endian )
-			rval = ntohll(rval);
+			rval = zeek::ntohll(rval);
 		else
 			{
 #ifdef WORDS_BIGENDIAN

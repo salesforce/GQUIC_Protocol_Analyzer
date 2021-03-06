@@ -10,8 +10,7 @@
 
 #include <zeek/plugin/Plugin.h>
 
-namespace zeek::plugin {
-namespace Salesforce_GQUIC {
+namespace zeek::plugin::Salesforce_GQUIC {
 
 class Plugin : public zeek::plugin::Plugin
 {
@@ -22,7 +21,6 @@ protected:
 
 extern Plugin plugin;
 
-}
 }
 
 #endif
