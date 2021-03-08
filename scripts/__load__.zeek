@@ -1,5 +1,5 @@
 #
-# This is loaded unconditionally at Bro startup to initialze built-ins.
+# This is loaded unconditionally at Zeek startup to initialze built-ins.
 #
 
 @load ./init.zeek

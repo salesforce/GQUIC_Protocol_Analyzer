@@ -5,8 +5,8 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-#ifndef BRO_PLUGIN_SALESFORCE_GQUIC
-#define BRO_PLUGIN_SALESFORCE_GQUIC
+#ifndef ZEEK_PLUGIN_SALESFORCE_GQUIC
+#define ZEEK_PLUGIN_SALESFORCE_GQUIC
 
 #include <zeek/plugin/Plugin.h>
 

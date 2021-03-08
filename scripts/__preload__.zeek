@@ -1,5 +1,5 @@
 #
-# This is loaded unconditionally at Bro startup before any of the BiFs
+# This is loaded unconditionally at Zeek startup before any of the BiFs
 # defined by the plugin become available.
 #
 # This is primarily for defining types that BiFs already depend on.
