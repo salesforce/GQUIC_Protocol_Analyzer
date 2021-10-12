@@ -1,0 +1,4 @@
+[package]
+description = Protocol analyzer that detects, dissects, fingerprints, and logs GQUIC traffic
+script_dir = scripts/Salesforce/GQUIC
+build_command = ./configure && make

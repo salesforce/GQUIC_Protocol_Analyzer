@@ -5,19 +5,21 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
+#include <zeek/analyzer/Component.h>
+
 #include "GQUIC.h"
 #include "Plugin.h"
 
-namespace plugin { namespace Salesforce_GQUIC { Plugin plugin; } }
+namespace zeek::plugin { namespace Salesforce_GQUIC { Plugin plugin; } }
 
-using namespace plugin::Salesforce_GQUIC;
+using namespace zeek::plugin::Salesforce_GQUIC;
 
-plugin::Configuration Plugin::Configure()
+zeek::plugin::Configuration Plugin::Configure()
 	{
-	auto c = new ::analyzer::Component("GQUIC",
-		::analyzer::gquic::GQUIC_Analyzer::Instantiate);
+	auto c = new zeek::analyzer::Component("GQUIC",
+		zeek::analyzer::gquic::GQUIC_Analyzer::Instantiate);
 	AddComponent(c);
-	plugin::Configuration config;
+	zeek::plugin::Configuration config;
 	config.name = "Salesforce::GQUIC";
 	config.description = "Google QUIC (GQUIC) protocol analyzer for Q039-Q046";
 	config.version.major = 1;
