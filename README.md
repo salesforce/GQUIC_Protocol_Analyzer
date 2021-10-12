@@ -196,7 +196,7 @@ Created by:
 With assistance from:
 * [John Althouse](https://twitter.com/4A4133)
 * [Rakesh Passa](https://twitter.com/Sithari443)
-* The [Corelight Team](https://github.com/corelight/zeek-quic)
+* The [Corelight Team](https://github.com/corelight/bro-quic)
 * Salesforce Threat Detection Team
 
 ### References:
