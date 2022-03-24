@@ -14,22 +14,14 @@ if [ -e `dirname $0`/configure.plugin ]; then
     . `dirname $0`/configure.plugin
 fi
 
-# Check for `cmake` command.
-type cmake > /dev/null 2>&1 || {
-    echo "\
-This package requires CMake, please install it first, then you may
-use this configure script to access CMake equivalent functionality.\
-" >&2;
-    exit 1;
-}
-
 usage() {
 
 cat 1>&2 <<EOF
 Usage: $0 [OPTIONS]
 
   Plugin Options:
-    --bro-dist=DIR             Path to Bro source tree
+    --cmake=PATH               Path to CMake binary
+    --zeek-dist=DIR            Path to Zeek source tree
     --install-root=DIR         Path where to install plugin into
     --with-binpac=DIR          Path to BinPAC installation root
     --with-broker=DIR          Path to Broker installation root
@@ -58,7 +50,7 @@ append_cache_entry () {
 
 # set defaults
 builddir=build
-brodist=""
+zeekdist=""
 installroot="default"
 CMakeCacheEntries=""
 
@@ -73,8 +65,16 @@ while [ $# -ne 0 ]; do
             usage
             ;;
 
-        --bro-dist=*)
-            brodist=`cd $optarg && pwd`
+        --cmake=*)
+            CMakeCommand=$optarg
+            ;;
+
+        --zeek-dist=*)
+            zeekdist=`cd $optarg && pwd`
+            ;;
+
+        --bro-dist=*) # Legacy option for backwards compability
+            zeekdist=`cd $optarg && pwd`
             ;;
 
         --install-root=*)
@@ -116,56 +116,81 @@ while [ $# -ne 0 ]; do
     shift
 done
 
-if [ -z "$brodist" ]; then
-    if type bro-config >/dev/null 2>&1; then
-        if bro-config --cmake_dir >/dev/null 2>&1; then
-            # Have a newer version of bro-config that has needed flags
-            append_cache_entry BRO_CONFIG_PREFIX PATH `bro-config --prefix`
-            append_cache_entry BRO_CONFIG_INCLUDE_DIR PATH `bro-config --include_dir`
-            append_cache_entry BRO_CONFIG_PLUGIN_DIR PATH `bro-config --plugin_dir`
-            append_cache_entry BRO_CONFIG_CMAKE_DIR PATH `bro-config --cmake_dir`
-            append_cache_entry CMAKE_MODULE_PATH PATH `bro-config --cmake_dir`
+if [ -z "$CMakeCommand" ]; then
+    # prefer cmake3 over "regular" cmake (cmake == cmake2 on RHEL)
+    if command -v cmake3 >/dev/null 2>&1 ; then
+        CMakeCommand="cmake3"
+    elif command -v cmake >/dev/null 2>&1 ; then
+        CMakeCommand="cmake"
+    else
+        echo "This package requires CMake, please install it first."
+        echo "Then you may use this script to configure the CMake build."
+        echo "Note: pass --cmake=PATH to use cmake in non-standard locations."
+        exit 1;
+    fi
+fi
 
-            build_type=`bro-config --build_type`
+if [ -z "$zeekdist" ]; then
+    if type zeek-config >/dev/null 2>&1; then
+       zeek_config="zeek-config"
+    elif type bro-config >/dev/null 2>&1; then
+       zeek_config="bro-config"
+    fi
+
+    if [ -n "${zeek_config}" ]; then
+        if ${zeek_config} --cmake_dir >/dev/null 2>&1; then
+            # Have a newer version of zeek-config that has needed flags
+            append_cache_entry BRO_CONFIG_PREFIX PATH `${zeek_config} --prefix`
+            append_cache_entry BRO_CONFIG_INCLUDE_DIR PATH `${zeek_config} --include_dir`
+            append_cache_entry BRO_CONFIG_PLUGIN_DIR PATH `${zeek_config} --plugin_dir`
+            append_cache_entry BRO_CONFIG_CMAKE_DIR PATH `${zeek_config} --cmake_dir`
+            append_cache_entry CMAKE_MODULE_PATH PATH `${zeek_config} --cmake_dir`
+
+            build_type=`${zeek_config} --build_type`
 
             if [ "$build_type" = "debug" ]; then
                 append_cache_entry BRO_PLUGIN_ENABLE_DEBUG BOOL true
             fi
 
             if [ -z "$binpac_root" ]; then
-                append_cache_entry BinPAC_ROOT_DIR PATH `bro-config --binpac_root`
+                append_cache_entry BinPAC_ROOT_DIR PATH `${zeek_config} --binpac_root`
             fi
 
             if [ -z "$broker_root" ]; then
-                append_cache_entry BROKER_ROOT_DIR PATH `bro-config --broker_root`
+                append_cache_entry BROKER_ROOT_DIR PATH `${zeek_config} --broker_root`
             fi
 
             if [ -z "$caf_root" ]; then
-                append_cache_entry CAF_ROOT_DIR PATH `bro-config --caf_root`
+                append_cache_entry CAF_ROOT_DIR PATH `${zeek_config} --caf_root`
             fi
         else
-            brodist=`bro-config --bro_dist 2> /dev/null`
+            # Using legacy bro-config, so we must use the "--bro_dist" option.
+            zeekdist=`${zeek_config} --bro_dist 2> /dev/null`
 
-            if [ ! -e "$brodist/bro-path-dev.in" ]; then
-                echo "$brodist does not appear to be a valid Bro source tree."
+            if [ ! -e "$zeekdist/zeek-path-dev.in" ]; then
+                echo "$zeekdist does not appear to be a valid Zeek source tree."
                 exit 1
             fi
 
-            append_cache_entry BRO_DIST PATH $brodist
-            append_cache_entry CMAKE_MODULE_PATH PATH $brodist/cmake
+            # BRO_DIST is needed to support legacy Bro plugins
+            append_cache_entry BRO_DIST  PATH $zeekdist
+            append_cache_entry ZEEK_DIST PATH $zeekdist
+            append_cache_entry CMAKE_MODULE_PATH PATH $zeekdist/cmake
         fi
     else
-        echo "Either 'bro-config' must be in PATH or '--bro-dist=<path>' used"
+        echo "Either 'zeek-config' must be in PATH or '--zeek-dist=<path>' used"
         exit 1
     fi
 else
-    if [ ! -e "$brodist/bro-path-dev.in" ]; then
-      echo "$brodist does not appear to be a valid Bro source tree."
+    if [ ! -e "$zeekdist/zeek-path-dev.in" -a ! -e "$zeekdist/bro-path-dev.in" ]; then
+      echo "$zeekdist does not appear to be a valid Zeek source tree."
       exit 1
     fi
 
-    append_cache_entry BRO_DIST PATH $brodist
-    append_cache_entry CMAKE_MODULE_PATH PATH $brodist/cmake
+    # BRO_DIST is needed to support legacy Bro plugins
+    append_cache_entry BRO_DIST  PATH $zeekdist
+    append_cache_entry ZEEK_DIST PATH $zeekdist
+    append_cache_entry CMAKE_MODULE_PATH PATH $zeekdist/cmake
 fi
 
 if [ "$installroot" != "default" ]; then
@@ -174,12 +199,12 @@ if [ "$installroot" != "default" ]; then
 fi
 
 echo "Build Directory        : $builddir"
-echo "Bro Source Directory   : $brodist"
+echo "Zeek Source Directory  : $zeekdist"
 
 mkdir -p $builddir
 cd $builddir
 
-cmake $CMakeCacheEntries ..
+"$CMakeCommand" $CMakeCacheEntries ..
 
 echo "# This is the command used to configure this build" > config.status
 echo $command >> config.status

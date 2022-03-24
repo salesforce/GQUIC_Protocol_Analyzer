@@ -5,24 +5,22 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 
-#ifndef BRO_PLUGIN_SALESFORCE_GQUIC
-#define BRO_PLUGIN_SALESFORCE_GQUIC
+#ifndef ZEEK_PLUGIN_SALESFORCE_GQUIC
+#define ZEEK_PLUGIN_SALESFORCE_GQUIC
 
-#include <plugin/Plugin.h>
+#include <zeek/plugin/Plugin.h>
 
-namespace plugin {
-namespace Salesforce_GQUIC {
+namespace zeek::plugin::Salesforce_GQUIC {
 
-class Plugin : public ::plugin::Plugin
+class Plugin : public zeek::plugin::Plugin
 {
 protected:
 	// Overridden from plugin::Plugin.
-	plugin::Configuration Configure() override;
+	zeek::plugin::Configuration Configure() override;
 };
 
 extern Plugin plugin;
 
-}
 }
 
 #endif
