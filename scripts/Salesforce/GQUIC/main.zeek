@@ -47,6 +47,7 @@ event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: 
 	#Tag grabber
 	local i = 0;
 	local fingerprint = "";
+	local cable_hash = "";
 	while ( i < (HeIn$tag) )
 		{
 		if (i == 0) {
@@ -68,10 +69,7 @@ event gquic_hello(c: connection, is_orig: bool, hdr: GQUIC::PublicHeader, HeIn: 
 		++i;
 		}
 	if (hdr?$version)
-		{
-		local version_string = fmt("%s", hdr$version);
-		local cable_hash = (version_string + "," + fingerprint); 
-		}
+		cable_hash = (fmt("%s", hdr$version) + "," + fingerprint);
 	else
 		cable_hash=("," + fingerprint);
 	local info: Info;
