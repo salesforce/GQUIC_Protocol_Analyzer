@@ -9,11 +9,7 @@
 #ifndef ANALYZER_PROTOCOL_GQUIC_GQUIC_H
 #define ANALYZER_PROTOCOL_GQUIC_GQUIC_H
 
-#if ZEEK_VERSION_NUMBER >= 40100
 #include <zeek/packet_analysis/protocol/udp/UDPSessionAdapter.h>
-#else
-#include <zeek/analyzer/protocol/udp/UDP.h>
-#endif
 #include <zeek/analyzer/protocol/pia/PIA.h>
 
 namespace binpac  {
