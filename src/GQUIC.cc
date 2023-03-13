@@ -47,10 +47,6 @@ void GQUIC_Analyzer::DeliverPacket(int len, const u_char* data, bool orig,
 		}
 	catch ( const binpac::Exception& e )
 		{
-#if ZEEK_VERSION_NUMBER >= 40100
-		ProtocolViolation(zeek::util::fmt("Binpac exception: %s", e.c_msg()));
-#else
-                AnalyzerViolation(zeek::util::fmt("Binpac exception: %s", e.c_msg()));
-#endif
+			AnalyzerViolation(zeek::util::fmt("Binpac exception: %s", e.c_msg()));
 		}
 	}
