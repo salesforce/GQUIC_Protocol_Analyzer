@@ -25,7 +25,6 @@ Usage: $0 [OPTIONS]
     --install-root=DIR         Path where to install plugin into
     --with-binpac=DIR          Path to BinPAC installation root
     --with-broker=DIR          Path to Broker installation root
-    --with-caf=DIR             Path to CAF installation root
     --with-bifcl=PATH          Path to bifcl executable
     --enable-debug             Compile in debugging mode
 EOF
@@ -89,11 +88,6 @@ while [ $# -ne 0 ]; do
         --with-broker=*)
             append_cache_entry BROKER_ROOT_DIR PATH $optarg
             broker_root=$optarg
-            ;;
-
-        --with-caf=*)
-            append_cache_entry CAF_ROOT_DIR PATH $optarg
-            caf_root=$optarg
             ;;
 
         --with-bifcl=*)
@@ -160,9 +154,6 @@ if [ -z "$zeekdist" ]; then
                 append_cache_entry BROKER_ROOT_DIR PATH `${zeek_config} --broker_root`
             fi
 
-            if [ -z "$caf_root" ]; then
-                append_cache_entry CAF_ROOT_DIR PATH `${zeek_config} --caf_root`
-            fi
         else
             # Using legacy bro-config, so we must use the "--bro_dist" option.
             zeekdist=`${zeek_config} --bro_dist 2> /dev/null`
